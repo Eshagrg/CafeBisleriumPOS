@@ -1,0 +1,233 @@
+@page "/admin/staff/add"
+@namespace CafeBisleriumPOS.Pages.admin
+@using CafeBisleriumPOS.Modules.Admin.model;
+@using CafeBisleriumPOS.Modules.Staff.model;
+@using  CafeBisleriumPOS.Common.model;
+@using CafeBisleriumPOS.Modules.Admin.service;
+@using CafeBisleriumPOS.common.helperServices;
+@inject AdminService adminService;
+@inject NotificationService notificationService;
+@inject SessionService sessionService;
+@inject NavigationManager navigationManager;
+@inject ActionService actionService;
+
+<h3>Add Staff</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (staffList != null && staffList.Count > 0)
+        {
+            @foreach (var staff in staffList)
+            {
+                <tr>
+                    <td>@staff.Username</td>
+                    <td>
+                        <!-- Buttons for editing and deleting staff members. -->
+                        <button @onclick="() => OpenEditModel(staff)" class="edit-button">Edit</button>
+                        <button @onclick="()=>deleteStaff(staff)" class="delete-button">Delete</button>
+                        <!-- Modal for editing staff details. -->
+                        @if (showEditModel)
+                        {
+                            <div class="modal" tabindex="-1" role="dialog" style="display:block;">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Add Staff</h5>
+                                        </div>
+                                        <div class="modal-body">
+                                            <AdminForm ButtonLabel="Edit Staff" Model="staffModel" OnSubmit="editStaff"
+                                                message="notificationService.Message"
+                                                messageClass="notificationService.messageClass"></AdminForm>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+<!-- Button to add a new staff member. -->
+@if (!isAuthorization)
+{
+    <button type="button" class="btn btn-primary" @onclick="OpenAddModal">Add Staff</button>
+    @if (showAddModal)
+    {
+        <div class="modal" tabindex="-1" role="dialog" style="display:block;">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Staff</h5>
+                    </div>
+                    <div class="modal-body">
+                        <AdminForm ButtonLabel="Add Staff" Model="staffModel" OnSubmit="AddStaff" message="@message"
+                            messageClass="@messageClass"></AdminForm>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+<!-- Modal for admin login when authorization is required. -->
+@if (isAuthorization && (sessionService.defaultNeedAuthorized()))
+{
+    <div class="modal" tabindex="-1" role="dialog" style="display:block;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Admin Login</h5>
+                </div>
+                <div class="modal-body">
+                    <AdminForm ButtonLabel="Log in" Model="adminModel" OnSubmit="Login" message="@message"
+                        messageClass="@messageClass"></AdminForm>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@code {
+    // StaffModel instance for staff-related operations.
+    StaffModel staffModel = new StaffModel();
+    // AdminModel instance for admin login.
+    AdminModel adminModel = new AdminModel();
+    // List to store staff members.
+    List<StaffModel>? staffList = new List<StaffModel>();
+    // Boolean to check if authorization is required.
+    bool isAuthorization = false;
+    // Variables for displaying notification messages.
+    string message = "";
+    bool showAddModal = false;
+    string messageClass = "";
+    bool showEditModel = false;
+    // Executes on component initialization to clear notifications.
+    protected async override void OnInitialized()
+    {
+        notificationService.Clear();
+    }
+    // Executes when parameters are set to retrieve the list of staff members.
+    protected async override Task OnParametersSetAsync()
+    {
+        staffList = await adminService.getStaffList();
+    }
+    // Checks if authentication is needed for the current operation
+    public async Task<bool> NeedAuthentication()
+    {
+        if (sessionService.defaultNeedAuthorized())
+        {
+            isAuthorization = true;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    // Adds a new staff member.
+    private async Task AddStaff()
+    {
+
+        var result = await actionService.Register<StaffModel>(staffModel);
+        notificationService.Notify(result.Message, "success-message");
+        notificationService.Clear();
+        staffList = await adminService.getStaffList();
+        sessionService.setNeedAuthorized(false);
+        CloseModal();
+        StateHasChanged(); //Because UI is not able to fetch coffee so we need to make it sure it will fetch the added coffees.
+    }
+    // Edits the details of a staff member.
+    public async void editStaff()
+    {
+        var result = await adminService.Edit(staffModel.Id, staffModel, "staff.json");
+        notificationService.Notify(result.Message, "success-message");
+        staffList = await adminService.getStaffList();
+        CloseModal();
+        StateHasChanged();
+    }
+    // Deletes a staff member.
+    public async void deleteStaff(StaffModel staff)
+    {
+        var noneedAuth = await this.NeedAuthentication();
+        if (!noneedAuth)
+        {
+            var result = await actionService.Delete<StaffModel>(staff.Id, "staff.json");
+            if (result.Success)
+            {
+                staffList.Remove(staff);
+                StateHasChanged();
+            }
+            else
+            {
+                notificationService.Notify(result.Message, "success-message");
+            }
+        }
+
+    }
+    // Handles admin login.
+    public async Task Login()
+    {
+        if (adminModel.userType == UserType.admin)
+        {
+            var result = await actionService.Login<AdminModel>(adminModel);
+            if (result.Success)
+            {
+                sessionService.setNeedAuthorized(false);
+                message = result.Message;
+                messageClass = "success-message";
+                CloseModal();
+            }
+            else
+            {
+                message = result.Message;
+                messageClass = "error-message";
+            }
+        }
+        else
+        {
+            message = "You are not authorized to access this page";
+            messageClass = "error-message";
+        }
+    }
+    // Opens the edit modal for a staff member.
+    public async void OpenEditModel(StaffModel staff)
+    {
+        var result = await this.NeedAuthentication();
+        if (!result)
+        {
+            staffModel = staff;
+            showEditModel = true;
+        }
+
+    }
+    // Opens the add modal for a new staff member
+    public async void OpenAddModal()
+    {
+        var result = await this.NeedAuthentication();
+        if (!result)
+        {
+            showAddModal = true;
+        }
+
+    }
+    // Closes all modals.
+    public void CloseModal()
+    {
+        showAddModal = false;
+        showEditModel = false;
+        isAuthorization = false;
+    }
+}

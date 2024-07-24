@@ -1,0 +1,49 @@
+@namespace CafeBisleriumPOS.Pages.admin
+@using CafeBisleriumPOS.common.helperServices;
+@using CafeBisleriumPOS.Modules.Admin.service;
+@using CafeBisleriumPOS.Modules.Staff.service;
+@using System.Diagnostics
+@inject SessionService sessionService;
+@inject NavigationManager NavigationManager;
+@inject NotificationService notificationService;
+@inject AdminService adminService;
+@inject StaffService staffService;
+@inject ActionService actionService;
+@page "/admin/logout"
+
+<button @onclick="HandleSubmit">Logout</button>
+
+
+
+@code {
+    // Private variables for message and message class.
+    private string? message = "";
+    private string? messageClass = "";
+    /// Handles the logout action when the button is clicked.
+    private async Task HandleSubmit()
+    {
+        // Calls the ActionService to perform the logout operation.
+        var result = await actionService.logOut();
+        if (result.Success)
+        {
+            sessionService.SetCurrentUser(false);
+            sessionService.setNeedAuthorized(true);
+            sessionService.setOnlyCoffee(false);
+            sessionService.setCustomerOnly(false);
+            sessionService.SetCurrentUserType(UserType.admin);
+            // Clears the order list in the staff service.
+            await staffService.clearOrderList();
+            // Updates message and message class, notifies, and navigates to the login page.
+            message = result.Message;
+            messageClass = "success-message";
+            notificationService.Notify(message, messageClass);
+            NavigationManager.NavigateTo("/admin/login");
+        }
+        else
+        {
+            // Updates message and message class in case of an error.
+            message = result.Message;
+            messageClass = "error-message";
+        }
+    }
+}

@@ -1,0 +1,26 @@
+﻿/* wwwroot/css/Home/Home.css */
+
+/* Styling for a corner image with absolute positioning */
+.corner-image {
+    position: absolute;
+    top: 70px;
+    right: 10px;
+}
+
+/* Styling for a cashier image with absolute positioning */
+.cashier {
+    position: absolute;
+    top: 150px;
+    left: 750px;
+    width: 300px;
+    height: 300px;
+}
+
+/* Styling for a customer image with absolute positioning */
+.customer {
+    position: absolute;
+    top: 150px;
+    left: 750px;
+    width: 300px;
+    height: 300px;
+}

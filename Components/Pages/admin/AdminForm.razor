@@ -1,0 +1,56 @@
+﻿@namespace CafeBisleriumPOS.Pages.admin
+@using CafeBisleriumPOS.Modules.Admin.model
+@using CafeBisleriumPOS.common.helperServices;
+@using CafeBisleriumPOS.Common.model
+@inject SessionService sessionService;
+<EditForm Model="Model" OnValidSubmit="OnSubmit">
+    <DataAnnotationsValidator />
+    <div class="form-group">
+        <p class="@messageClass">@message</p>
+        <label for="username">Username:</label>
+        <input required id="username" @bind="Model.Username" />
+        <ValidationMessage For="@(() => Model.Username)" />
+    </div>
+    <!-- Conditional rendering based on whether the user has customer-only access. -->
+    @if (!sessionService.getCustomerOnly())
+    {
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input required id="password" type="password" @bind="Model.Password" />
+            <ValidationMessage For="@(() => Model.Password)" />
+        </div>
+        <div class="form-group">
+            <label for="userType">UserType:</label>
+            <select @bind="Model.userType">
+                <option value="">Choose user type</option>
+                <option value="admin">Admin</option>
+                <option value="staff">Staff</option>
+            </select>
+            <ValidationMessage For="@(() => Model.userType)" />
+        </div>
+    }
+    <!-- Conditional rendering based on whether the user has customer-only access. -->
+    @if (sessionService.getCustomerOnly())
+    {
+        <div class="form-group">
+            <label for="Email">Email:</label>
+            <input required id="Email" type="text" @bind="Model.Email" />
+            <ValidationMessage For="@(() => Model.Email)" />
+        </div>
+    }
+    <button type="submit">@ButtonLabel</button>
+</EditForm>
+@code {
+    [Parameter]
+    public string? ButtonLabel { get; set; }
+
+    [Parameter]
+    public EventCallback OnSubmit { get; set; }
+
+    [Parameter]
+    public UserModel Model { get; set; } = new UserModel { userType = UserType.admin, Password = null };
+    [Parameter]
+    public string? message { get; set; }
+    [Parameter]
+    public string? messageClass { get; set; }
+}

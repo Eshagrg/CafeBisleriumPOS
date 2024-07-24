@@ -1,0 +1,67 @@
+@page "/totalTransactions"
+@namespace CafeBisleriumPOS.Pages.admin
+@using CafeBisleriumPOS.Common.model;
+@using CafeBisleriumPOS.Modules.Admin.service;
+@inject AdminService adminService
+
+<h1>Sales Transactions</h1>
+
+@if (transactions == null)
+{
+    <!-- Displayed when there are no transactions -->
+    <h3>As of the present moment, there have been no orders placed thus far..</h3>
+}
+else
+{
+    <!-- Displaying the table of transactions -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Date</th>
+                <th>Total Price</th>
+                <th>Coffee Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var transaction in transactions)
+            {
+                <tr>
+                    <td>@transaction.Email</td>
+                    <td>@transaction.Date</td>
+                    <td>@transaction.TotalPrice</td>
+                    <td>
+                        @foreach (var coffee in transaction.CoffeeData)
+                        {
+                            <p>@coffee.Name (@coffee.CoffeeType) - @coffee.Size - @coffee.Price</p>
+                            @if (coffee.AddIns != null && coffee.AddIns.Any())
+                            {
+                                <p>Add-ins:</p>
+                                <ul>
+                                    @foreach (var addIn in coffee.AddIns)
+                                    {
+                                        <li>@addIn.Name - @addIn.Price</li>
+                                    }
+                                </ul>
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <h2>Total Revenue: @totalRevenue</h2>
+}
+
+@code {
+    private List<OrderModel> transactions;
+    private decimal totalRevenue;
+    // Fetching and initializing transaction data
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await adminService.GetSalesTransactionsAndTotalRevenue();
+        transactions = result.Item1;
+        totalRevenue = result.Item2;
+    }
+} 
+

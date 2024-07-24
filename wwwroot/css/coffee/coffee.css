@@ -1,0 +1,57 @@
+/* Set table width to 100%, separate border-collapse, and add vertical spacing between rows */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 15px;
+}
+
+/* Styling for table header and data cells */
+th, td {
+    border: 1px solid #41464b;
+    padding: 8px;
+    margin: 15px 0;
+}
+
+/* Styling for table header */
+th {
+    background-color: #f2f2f2;
+    color: black;
+}
+
+/* Styling for table rows */
+tr {
+    background-color: #f8f8f8;
+    border-radius: 10px;
+}
+
+/* Styling for edit button */
+.edit-button {
+    background-color: #808080;
+    color: white;
+    border: none;
+}
+
+/* Styling for delete button */
+.delete-button {
+    background-color: red;
+    color: #fff;
+    padding: 5px 10px;
+    margin: 0 auto;
+    display: block;
+    width: 200px;
+}
+
+/* Styling for fail message */
+.fail-message {
+    color: red;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Styling for success message */
+.success-message {
+    color: green;
+    font-weight: bold;
+    text-align: center;
+    margin-left: auto;
+}

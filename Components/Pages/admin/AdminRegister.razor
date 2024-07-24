@@ -1,0 +1,60 @@
+@page "/admin/register"
+@namespace CafeBisleriumPOS.Pages.admin
+@using CafeBisleriumPOS.Modules.Admin.model
+@using CafeBisleriumPOS.Modules.Admin.service
+@using CafeBisleriumPOS.Pages.admin
+@using CafeBisleriumPOS.common.helperServices
+@using System.Diagnostics
+@inject AdminService adminService;
+@inject NavigationManager navigationManager;
+@inject NotificationService notificationService;
+@inject SessionService sessionService;
+@inject ActionService actionService;
+
+<h3>Admin Register</h3>
+
+<!-- AdminForm component for registering a new admin. -->
+<AdminForm ButtonLabel="Register" Model="Model" OnSubmit="HandleSubmit" message="@message"
+    messageClass="@messageClass" />
+
+@code {
+    // Private variables for message and message class.
+    private string message = "";
+    private string messageClass = "";
+    // AdminModel instance for registration form data.
+    AdminModel Model = new AdminModel();
+    // Handles the submission of the admin registration form.
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            // Calls the ActionService to register a new admin.
+            var result = await actionService.Register<AdminModel>(Model);
+            // Updates session, notification, and navigates to the login page based on the registration result.
+            if (result.Success)
+            {
+                sessionService.setAdminRegistered();
+                message = result.Message;
+                messageClass = "success-message";
+                notificationService.Notify(message, messageClass);
+                navigationManager.NavigateTo("/admin/login");
+
+            }
+            else
+            {
+                message = result.Message;
+                messageClass = "error-message";
+                notificationService.Notify(message, messageClass);
+                navigationManager.NavigateTo("/admin/login");
+
+            }
+        }
+        catch (Exception error)
+        {
+            // Handles exceptions and updates the message.
+            message = error.Message;
+        }
+
+    }
+
+}

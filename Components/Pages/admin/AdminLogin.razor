@@ -1,0 +1,72 @@
+@page "/admin/login"
+@namespace CafeBisleriumPOS.Pages.admin
+@using CafeBisleriumPOS.Modules.Admin.model
+@using CafeBisleriumPOS.Modules.Admin.service;
+@using CafeBisleriumPOS.Common.model;
+@using CafeBisleriumPOS.common.helperServices;
+@inject NavigationManager navigationManager
+@inject AdminService adminService;
+@inject NotificationService notificationService;
+@inject SessionService sessionService;
+@using Microsoft.Extensions.Logging
+@using System.Diagnostics
+@inject SessionService sessionService;
+@inject ActionService actionService;
+<!-- Link to the Home.css stylesheet. -->
+<link rel="stylesheet" href="css/Home/Home.css" />
+<!-- Image element for displaying the cashier icon. -->
+<img src="cashier.png" alt="cashier" class="cashier">
+<!-- Login section -->
+<h3>Login</h3>
+<AdminForm ButtonLabel="Log in" Model="Model" OnSubmit="HandleSubmit" message="@message" messageClass="@messageClass" />
+@code {
+    // Private variables for message and message class
+    private string? message = "";
+    private string? messageClass = "";
+    // AdminModel instance for login form data.
+    AdminModel Model = new AdminModel();
+
+    protected override void OnInitialized()
+    {
+        message = notificationService.Message;
+        messageClass = notificationService.MessageClass;
+        notificationService.Clear();
+    }
+    // Handles the submission of the login form.
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            Trace.WriteLine("This is Login");
+            var result = await actionService.Login<AdminModel>(Model);
+            if (result.Success)
+            {
+                if (Model.userType == UserType.admin)
+                {
+                    sessionService.SetCurrentUserType(UserType.admin);
+                }
+                else if (Model.userType == UserType.staff)
+                {
+                    sessionService.SetCurrentUserType(UserType.staff);
+                }
+                Trace.WriteLine(result);
+                sessionService.SetCurrentUser(true);
+                sessionService.NotifyStateChanged();
+                message = result.Message;
+                messageClass = "success-message";
+                navigationManager.NavigateTo("/");
+            }
+            else
+            {
+                message = result.Message;
+                messageClass = "error-message";
+            }
+        }
+        catch (Exception error)
+        {
+            message = error.Message;
+        }
+
+    }
+
+}

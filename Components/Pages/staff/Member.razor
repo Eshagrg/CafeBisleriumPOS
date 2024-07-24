@@ -1,0 +1,74 @@
+@page "/staff/addMember"
+@namespace CafeBisleriumPOS.Pages.staff
+@using CafeBisleriumPOS.Pages.admin;
+@using CafeBisleriumPOS.Modules.Admin.model
+@using CafeBisleriumPOS.Modules.Admin.service;
+@using CafeBisleriumPOS.Common.model;
+@using CafeBisleriumPOS.common.helperServices;
+@inject NavigationManager navigationManager
+@inject AdminService adminService;
+@inject NotificationService notificationService;
+@inject SessionService sessionService;
+@using Microsoft.Extensions.Logging
+@using System.Diagnostics
+@inject SessionService sessionService;
+@inject ActionService actionService;
+<link rel="stylesheet" href="css/Home/Home.css" />
+<img src="customer.png" alt="customer" class="customer">
+
+<h3>Register Member</h3>
+<!-- AdminForm for adding a customer with specified parameters -->
+<AdminForm ButtonLabel="Add Customer" Model="Model" OnSubmit="HandleSubmit" message="@message"
+    messageClass="@messageClass" />
+
+@code {
+    // Declarations
+    private string? message = "";
+    private string? messageClass = "";
+    UserModel Model = new UserModel();
+    //Initialization when the component is loaded
+    protected override void OnInitialized()
+    {
+        message = notificationService.Message;
+        messageClass = notificationService.MessageClass;
+        notificationService.Clear();
+    }
+    protected async override Task OnParametersSetAsync()
+    {
+        sessionService.setCustomerOnly(true);
+    }
+
+    // Handling form submission
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            var result = await actionService.Register<UserModel>(Model);
+            if (result.Success)
+            {
+                sessionService.setAdminRegistered();
+                message = result.Message;
+                messageClass = "success-message";
+                notificationService.Notify(message, messageClass);
+                navigationManager.NavigateTo("/admin/login");
+
+            }
+            else
+            {
+                message = result.Message;
+                messageClass = "error-message";
+                notificationService.Notify(message, messageClass);
+                navigationManager.NavigateTo("/admin/login");
+
+            }
+        }
+        catch (Exception error)
+        {
+            // Handle exceptions by displaying an error message
+            message = error.Message;
+        }
+
+    }
+
+
+}

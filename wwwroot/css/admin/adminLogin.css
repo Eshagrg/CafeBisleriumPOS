@@ -1,0 +1,64 @@
+body {
+    background-color: #f8d7da; /* Baby Pink Background */
+    font-family: Arial, sans-serif;
+}
+
+h3 {
+    color: #c82333;
+    margin: 21px 0 30px 80px;
+    margin-bottom: 10px;
+    font-size: 25px;
+    font-weight: bold;
+    width: auto;
+}
+
+
+form {
+    width: 302px;
+    margin: 21px 0 30px 80px;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: px;
+    box-shadow: 0px 0px 10px 0px #aaa;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        white-space: nowrap;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #f8d7da; /* Matching the background color for input border */
+        border-radius: 4px;
+    }
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #e44d87; /* Light Pink Button Background */
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+    button:hover {
+        background-color: #c42c63; /* Darker Pink on Hover */
+    }
+
+.error-message {
+    color: #ff0000; /* Red Color for Error Message */
+    margin-bottom: 15px;
+}
+
+.success-message {
+    color: #28a745; /* Green for Success Message */
+    margin-bottom: 15px;
+}
